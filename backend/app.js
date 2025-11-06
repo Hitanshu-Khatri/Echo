@@ -5,7 +5,8 @@ import mongoose from "mongoose";
 import cors from "cors";
 import {connectToSocket} from "./controllers/socketManager.js";
 import userRoutes from "./routes/users.route.js";
-
+import dotenv from "dotenv";
+dotenv.config();
 
 
 const app = express();
@@ -20,7 +21,7 @@ app.use("/api/v1/users",userRoutes);
 
 const start = async ()=>{
     app.set("mongo_user")
-    const connectionDb = await mongoose.connect(`mongodb+srv://deadpoolacc4games_db_user:XT005adRKfxo2eTY@echocluster.hiehfac.mongodb.net/?retryWrites=true&w=majority&appName=EchoCluster`);
+    const connectionDb = await mongoose.connect(process.env.MONGODB_URI);
     console.log("Connected to MongoDb");
     server.listen(app.get("port"),()=>{
         console.log(`Server is running on port ${app.get("port")}`);

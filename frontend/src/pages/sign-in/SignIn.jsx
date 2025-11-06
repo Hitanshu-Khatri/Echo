@@ -107,7 +107,7 @@ export default function Authentication(props) {
 
     const handleAuth = async (data) => {
       const client = axios.create({
-        baseURL: `http://${server}/api/v1/users`
+        baseURL: `${server}/api/v1/users`
       });
 
       try {

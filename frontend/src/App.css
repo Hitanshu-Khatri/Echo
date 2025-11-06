@@ -1,0 +1,229 @@
+/* Responsive landing page (mobile-first) */
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; margin: 0; }
+
+/* container + background */
+.landingPageContainer {
+  width: 100%;
+  min-height: 100vh;
+  background: url("/background.jpg") no-repeat center/cover; /* in React public/, use /background.jpg */
+  color: white;
+  overflow-x: hidden; /* avoid horizontal scroll caused by 100vw */
+  display: flex;
+  flex-direction: column;
+}
+
+/* NAV */
+.landingPageContainer nav {
+  padding-inline: 1.2rem;
+  padding-block: 1.2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.landingPageContainer nav h2 {
+  font-size: clamp(1.2rem, 3vw, 1.8rem); /* fluid size */
+  font-weight: 500;
+  margin: 0;
+}
+
+/* nav list - compact and touch friendly on mobile */
+.landingPageContainer nav .navList {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+}
+
+/* make text-links look like buttons (if you want) */
+.landingPageContainer nav .navList p,
+.landingPageContainer nav .navList a {
+  margin: 0;
+  padding: 0.45rem 0.75rem;
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+/* primary highlight for Register / Login if desired */
+.landingPageContainer nav .navList a.primary {
+  background: rgba(3,162,211,0.95);
+  color: white;
+}
+
+/* MAIN HERO - mobile first: stacked */
+.landingMainContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding-inline: 1.25rem;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh; /* keep a sizeable hero area */
+}
+
+/* left column (text) */
+.landingMainContainer > div:nth-child(1) {
+  font-size: clamp(1.25rem, 4.5vw, 2rem); /* fluid heading size */
+  text-align: center;
+  max-width: 44rem;
+}
+
+/* CTA wrapper (was role="button") */
+.landingMainContainer > div:nth-child(1) div[role="button"] {
+  display: inline-block;
+  background: rgb(3 162 211);
+  padding: 0.75rem 1rem;
+  border-radius: 26px;
+  margin-top: 1rem;
+}
+
+/* ensure anchor inside fits well */
+.landingMainContainer > div:nth-child(1) div[role="button"] a {
+  color: white;
+  text-decoration: none;
+  font-size: 1rem;
+  display:inline-block;
+}
+
+/* right column (image) */
+.landingMainContainer > div:nth-child(2) {
+  width: 100%;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding-inline: 1rem;
+}
+
+/* responsive hero image */
+.landingMainContainer > div:nth-child(2) img {
+  width: min(420px, 85%);
+  height: auto;
+  object-fit: contain;
+  border-radius: 12px;
+  display: block;
+}
+
+/* SMALL phones: tighten paddings */
+@media (max-width: 420px) {
+  .landingPageContainer nav { padding-inline: 0.8rem; padding-block: 1rem; }
+  .landingMainContainer { padding-inline: 0.8rem; min-height: 65vh; }
+  .landingPageContainer nav .navList { gap: 0.5rem; }
+  .landingMainContainer > div:nth-child(1) { font-size: 1.15rem; }
+  .landingMainContainer > div:nth-child(1) div[role="button"] a { font-size: 0.95rem; }
+}
+
+/* TABLET & UP: two-column layout */
+@media (min-width: 768px) {
+  .landingMainContainer {
+    flex-direction: row;
+    padding-inline: 3rem;
+    min-height: 70vh;
+    align-items: center;
+  }
+
+  .landingMainContainer > div:nth-child(1) {
+    text-align: left;
+    font-size: clamp(1.5rem, 2.5vw, 2rem);
+  }
+
+  .landingMainContainer > div:nth-child(2) img {
+    width: min(520px, 45vw);
+  }
+}
+
+/* DESKTOP: more horizontal spacing */
+@media (min-width: 1100px) {
+  .landingPageContainer nav { padding-inline: 3rem; }
+  .landingMainContainer { padding-inline: 4rem; gap: 2rem; }
+  .landingMainContainer > div:nth-child(1) { font-size: 2.1rem; }
+}
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow-x: hidden; /* <-- key: hide any accidental horizontal overflow */
+}
+
+/* Container: prefer 100% instead of 100vw to avoid scrollbar width issues */
+.landingPageContainer {
+  width: 100%;
+  min-height: 100vh;
+  background: url("/background.jpg") no-repeat center/cover;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden; /* extra safety */
+  position: relative;
+}
+
+/* Make hero area clip any overflowing media */
+.landingMainContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding-inline: 1.25rem;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+  /* ensure children can't push the page wider */
+  overflow: hidden;
+  width: 100%;
+}
+
+/* Right column wrapper — keep it bounded to viewport */
+.landingMainContainer > div:nth-child(2) {
+  width: 100%;
+  max-width: 55vw;       /* prevents the image from growing beyond the right edge on desktop */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;  /* optional: stops accidental hover if image extends */
+}
+
+/* Hero image: always constrained inside its wrapper */
+.landingMainContainer > div:nth-child(2) img {
+  width: 100%;
+  max-width: 520px;      /* change as desired */
+  height: auto;
+  display: block;
+  object-fit: contain;
+  transform: none;       /* remove large transforms that push outside viewport */
+  will-change: transform;
+  user-select: none;
+}
+
+/* If you want a rotated/stylized image but kept inside viewport, use smaller rotation + clip */
+.landingMainContainer > div:nth-child(2) .heroImageRotated {
+  transform: rotate(-8deg) translateY(-2vh); /* modest transform only */
+  max-width: 48vw;
+  max-height: 78vh;
+}
+
+/* Desktop: two-column layout; ensure left and right sum <= 100% */
+@media (min-width: 768px) {
+  .landingMainContainer {
+    flex-direction: row;
+    gap: 2rem;
+    padding-inline: 3rem;
+  }
+
+  .landingMainContainer > div:nth-child(1) {
+    width: 50%;
+    text-align: left;
+  }
+
+  .landingMainContainer > div:nth-child(2) {
+    width: 50%;
+    max-width: 50%;
+  }
+
+  /* make sure the image never exceeds its column */
+  .landingMainContainer > div:nth-child(2) img {
+    max-width: 100%;
+    height: auto;
+  }
+}

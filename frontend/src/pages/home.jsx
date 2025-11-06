@@ -218,7 +218,7 @@ function HomeComponent() {
               >
                 <Box
                   component="img"
-                  src="/src/logo3.png"
+                  src="/logo3.png"
                   alt="Echo illustration"
                   sx={{ width: "100%", maxWidth: 520, display: "block", mx: "auto" }}
                 />

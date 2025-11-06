@@ -3,7 +3,6 @@ import styles from "../styles/videoComponent.module.css"
 import TextField from "@mui/material/TextField";
 import { useRef, useState, useEffect } from "react";
 import Button from "@mui/material/Button";
-const server_url = "http://localhost:8000";
 import io from "socket.io-client";
 import IconButton from "@mui/material/IconButton";
 import Badge from "@mui/material/Badge";
@@ -22,6 +21,7 @@ import { useNavigate } from "react-router-dom";
 import { Box, Paper, Stack, Typography, InputAdornment } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
 import LoginRoundedIcon from "@mui/icons-material/LoginRounded";
+import server from "../environment";
 
 const iceCandidates = {};
 
@@ -222,7 +222,7 @@ export default function VideoMeetComponent() {
   
 
   let connectToSocketServer = () => {
-    socketRef.current = io.connect(server_url, { secure: false });
+    socketRef.current = io.connect(server, { secure: false });
     socketRef.current.on('signal', gotMessageFromServer);
     socketRef.current.on('connect', () => {
       socketRef.current.emit("join-call", window.location.href)

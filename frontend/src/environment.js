@@ -1,6 +1,6 @@
-let IS_PROD = false;
+let IS_PROD = true;
 const server = IS_PROD ?
-    "https://apnacollegebackend.onrender.com" :
+    "https://echobackend-svb4.onrender.com" :
 
     "http://localhost:8000"
 

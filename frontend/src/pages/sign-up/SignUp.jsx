@@ -19,6 +19,7 @@ import { GoogleIcon, FacebookIcon, EchoIcon } from './components/CustomIcons';
 import httpStatus from "http-status";
 import axios from "axios";
 import { useNavigate } from 'react-router-dom';
+import server from '../../environment';
 
 
 const Card = styled(MuiCard)(({ theme }) => ({
@@ -125,7 +126,7 @@ export default function SignUp(props) {
 
     const handleAuth = async (data) => {
       const client = axios.create({
-        baseURL: "http://localhost:8000/api/v1/users"
+        baseURL: `http://${server}/api/v1/users`
       });
 
       try {

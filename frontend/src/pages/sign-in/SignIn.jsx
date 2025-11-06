@@ -21,7 +21,7 @@ import httpStatus from "http-status";
 import axios from "axios";
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
-
+import server from '../../environment';
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
@@ -107,7 +107,7 @@ export default function Authentication(props) {
 
     const handleAuth = async (data) => {
       const client = axios.create({
-        baseURL: "http://localhost:8000/api/v1/users"
+        baseURL: `http://${server}/api/v1/users`
       });
 
       try {

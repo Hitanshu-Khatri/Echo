@@ -138,7 +138,7 @@ export default function SignUp(props) {
 
         if (request.status === httpStatus.CREATED) {
           console.log('Registration successful:', request.data.messages);
-          router("/auth")
+          router("/login")
         }
       } catch (error) {
         console.error('Registration failed:', error);
@@ -263,7 +263,7 @@ export default function SignUp(props) {
             </Button>
             <Typography sx={{ textAlign: 'center' }}>
               Already have an account?{' '}
-              <Link href="/auth" variant="body2" sx={{ alignSelf: 'center' }}>
+              <Link href="/login" variant="body2" sx={{ alignSelf: 'center' }}>
                 Sign in
               </Link>
             </Typography>

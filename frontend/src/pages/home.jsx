@@ -69,7 +69,8 @@ function HomeComponent() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    navigate("/auth");
+    sessionStorage.removeItem("token");
+    navigate("/login");
   };
 
   return (

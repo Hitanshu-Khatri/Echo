@@ -1,0 +1,20 @@
+version: "3.8"
+
+services:
+  backend:
+    build: ./backend
+    container_name: echo-backend
+    env_file:
+      - ./backend/.env
+    expose:
+      - "8000"
+
+  nginx:
+    build: ./frontend
+    container_name: echo-nginx
+    ports:
+      - "8000:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - backend

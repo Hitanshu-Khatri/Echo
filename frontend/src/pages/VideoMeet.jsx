@@ -1,28 +1,62 @@
-import React from "react"
-import styles from "../styles/videoComponent.module.css"
-import TextField from "@mui/material/TextField";
-import { useRef, useState, useEffect } from "react";
-import Button from "@mui/material/Button";
-import io from "socket.io-client";
-import IconButton from "@mui/material/IconButton";
-import Badge from "@mui/material/Badge";
-import MailIcon from '@mui/icons-material/Mail';
-import VideocamIcon from '@mui/icons-material/Videocam';
-import VideocamOffIcon from '@mui/icons-material/VideocamOff'
-import CallEndIcon from '@mui/icons-material/CallEnd'
-import MicIcon from '@mui/icons-material/Mic'
-import MicOffIcon from '@mui/icons-material/MicOff'
-import ScreenShareIcon from '@mui/icons-material/ScreenShare';
-import StopScreenShareIcon from '@mui/icons-material/StopScreenShare'
-import ChatIcon from '@mui/icons-material/Chat'
-import ListItem from "@mui/material/ListItem";
-const connections = {};
+import React, { useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, Paper, Stack, Typography, InputAdornment } from "@mui/material";
-import PersonIcon from "@mui/icons-material/Person";
-import LoginRoundedIcon from "@mui/icons-material/LoginRounded";
+import io from "socket.io-client";
 import server from "../environment";
 
+// UI Components
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  IconButton,
+  Badge,
+  Paper,
+  Stack,
+  InputAdornment,
+  Grid,
+  Drawer,
+  createTheme,
+  ThemeProvider,
+  CssBaseline,
+  Container,
+  Divider,
+  Tooltip,
+  AppBar,
+  Toolbar
+} from "@mui/material";
+
+// Icons
+import {
+  Mic as MicIcon,
+  MicOff as MicOffIcon,
+  Videocam as VideocamIcon,
+  VideocamOff as VideocamOffIcon,
+  CallEnd as CallEndIcon,
+  ScreenShare as ScreenShareIcon,
+  StopScreenShare as StopScreenShareIcon,
+  Chat as ChatIcon,
+  Close as CloseIcon,
+  Person as PersonIcon,
+  LoginRounded as LoginRoundedIcon,
+  Send as SendIcon,
+} from "@mui/icons-material";
+
+
+const darkTheme = createTheme({
+  palette: {
+    mode: "dark",
+    primary: { main: "#8ab4f8" }, 
+    background: { default: "#202124", paper: "#303134" },
+    error: { main: "#ea4335" },
+  },
+  components: {
+    MuiButton: { styleOverrides: { root: { borderRadius: 24, textTransform: "none", fontWeight: 600 } } },
+    MuiPaper: { styleOverrides: { root: { backgroundImage: "none" } } },
+  },
+});
+
+const connections = {};
 const iceCandidates = {};
 
 const peerConfigConnections = {
@@ -33,6 +67,7 @@ const peerConfigConnections = {
 
 export default function VideoMeetComponent() {
 
+  
   var socketRef = useRef();
   let socketIdRef = useRef();
 
@@ -49,12 +84,12 @@ export default function VideoMeetComponent() {
   let [screenAvailable, setScreenAvailable] = useState();
   let [messages, setMessages] = useState([]);
   let [message, setMessage] = useState("");
-  let [newMessages, setNewMessages] = useState(3);
+  let [newMessages, setNewMessages] = useState(0);
   let [askForUsername, setAskForUsername] = useState(true);
 
   let [username, setUsername] = useState("");
 
-  const videoRef = useRef([])
+  const videoRef = useRef([]);
 
   let [videos, setVideos] = useState([]);
 
@@ -210,16 +245,16 @@ export default function VideoMeetComponent() {
     }
   }
 
-  let addMessage = (data,sender,socketIdSender) => {
-    setMessages((prevMessages)=>[
+  let addMessage = (data, sender, socketIdSender) => {
+    setMessages((prevMessages) => [
       ...prevMessages,
-      {sender:sender,data:data}
+      { sender: sender, data: data }
     ]);
-    if(socketIdSender !== socketIdRef.current){
-      setNewMessages((prevMessages)=> prevMessages+1)
+    if (socketIdSender !== socketIdRef.current) {
+      setNewMessages((prevMessages) => prevMessages + 1)
     };
-    }
-  
+  }
+
 
   let connectToSocketServer = () => {
     socketRef.current = io.connect(server, { secure: false });
@@ -336,224 +371,287 @@ export default function VideoMeetComponent() {
   }
 
   let getDisplayMediaSuccess = (stream) => {
-    try{
+    try {
       window.localStream.getTracks().forEach(track => track.stop())
-    }catch(e){
+    } catch (e) {
       console.log(e);
     }
     window.localStream = stream;
     localVideoRef.current.srcObject = stream;
 
-    for(let id in connections){
-      if(id === socketIdRef.current) continue;
+    for (let id in connections) {
+      if (id === socketIdRef.current) continue;
 
       connections[id].addStream(window.localStream);
       connections[id].createOffer().then((description) => {
         connections[id].setLocalDescription(description)
-        .then(() => {
-          socketRef.current.emit('signal', id, JSON.stringify({ 'sdp': connections[id].localDescription }))
-        })
-        .catch(e => console.log(e))
+          .then(() => {
+            socketRef.current.emit('signal', id, JSON.stringify({ 'sdp': connections[id].localDescription }))
+          })
+          .catch(e => console.log(e))
       })
     }
 
-     stream.getTracks().forEach(track => track.onended = () => {
-            setScreen(false);
+    stream.getTracks().forEach(track => track.onended = () => {
+      setScreen(false);
 
 
-            try {
-                let tracks = localVideoRef.current.srcObject.getTracks()
-                tracks.forEach(track => track.stop())
-            } catch (e) { console.log(e) }
+      try {
+        let tracks = localVideoRef.current.srcObject.getTracks()
+        tracks.forEach(track => track.stop())
+      } catch (e) { console.log(e) }
 
-            let blackSilence = (...args) => new MediaStream([black(...args), silence()])
-            window.localStream = blackSilence()
-            localVideoRef.current.srcObject = window.localStream
+      let blackSilence = (...args) => new MediaStream([black(...args), silence()])
+      window.localStream = blackSilence()
+      localVideoRef.current.srcObject = window.localStream
 
-            getUserMedia();
-        })
+      getUserMedia();
+    })
   }
 
   let getDisplayMedia = () => {
-    if(screen){
-      if(navigator.mediaDevices.getDisplayMedia){
-        navigator.mediaDevices.getDisplayMedia({video: true,audio:true})
-        .then(getDisplayMediaSuccess)
-        .then((stream) => {})
-        .catch((e) => console.log(e))
-      }
+    if (screen) {
+      if (navigator.mediaDevices.getDisplayMedia) {
+        navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
+          .then(getDisplayMediaSuccess)
+          .then((stream) => { })
+          .catch((e) => console.log(e))
       }
     }
-  
+  }
 
-  useEffect(()=>{
-    if(screen!== undefined){
+
+  useEffect(() => {
+    if (screen !== undefined) {
       getDisplayMedia();
     }
-  },[screen])
+  }, [screen])
 
   let handleScreen = () => {
     setScreen(!screen);
   }
 
   let sendMessage = () => {
-      socketRef.current.emit("chat-message",message,username);
-      setMessage("");
-  
+    socketRef.current.emit("chat-message", message, username);
+    setMessage("");
+
   }
 
   let handleEndCall = () => {
-    try{
+    try {
       let tracks = localVideoRef.current.srcObject.getTracks()
       tracks.forEach(track => track.stop())
-    }catch(e){
+    } catch (e) {
       console.log(e);
     }
     routeTo("/home");
-    }
-  
+  }
+
   let handleChat = () => {
     setShowModal(!showModal);
   }
 
-
+  // =================================================================
+  //  UI RENDER START (Modified for better UI, same Logic)
+  // =================================================================
 
   return (
-    <div className="main">
-
-      {askForUsername === true ?
-
-        <Box className="lobbyenter">
-  <Paper elevation={6} sx={{ p: 3, borderRadius: 3, maxWidth: 420, mx: "auto", mt: 4 }}>
-    <Stack spacing={2}>
-      <Typography variant="h5" fontWeight={700}>
-        Enter the Lobby
-      </Typography>
-
-      <TextField
-        label="Username"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        placeholder="e.g. wade_wilson"
-        onKeyDown={(e) => e.key === "Enter" && username.trim() && connect()}
-        helperText={!username.trim() ? "Please enter a username to continue." : " "}
-        error={!username.trim()}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <PersonIcon />
-            </InputAdornment>
-          ),
-        }}
-        fullWidth
-      />
-
-      <Button
-        variant="contained"                  // note: fixed typo from 'varient'
-        size="large"
-        onClick={connect}
-        startIcon={<LoginRoundedIcon />}
-        disabled={!username.trim()}
-        fullWidth
-      >
-        Connect
-      </Button>
-    </Stack>
-  </Paper>
-
-  <Box sx={{ mt: 3, maxWidth: 640, mx: "auto" }}>
-    <Box
-      sx={{
-        position: "relative",
-        borderRadius: 2,
-        overflow: "hidden",
-        aspectRatio: "16 / 9",
-        bgcolor: "grey.900",
-      }}
-    >
-      <video
-        ref={localVideoRef}
-        autoPlay
-        muted
-        playsInline
-        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-      />
-    </Box>
-  </Box>
-</Box>
- : <div className={styles.meetVideoContainer}>
-
-          {showModal ? 
-          <div className={styles.chatRoom}>
+    <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
+      
+      {askForUsername === true ? (
+        // --- LOBBY UI ---
+        <Container maxWidth="sm" sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+          <Paper elevation={10} sx={{ p: 4, borderRadius: 4, width: "100%", textAlign: "center", backdropFilter: "blur(10px)", backgroundColor: "rgba(48, 49, 52, 0.95)" }}>
+            <Stack spacing={3}>
+              <Typography variant="h4" fontWeight={700}>Join Meeting</Typography>
               
+              <Box sx={{ position: "relative", width: "100%", aspectRatio: "16/9", borderRadius: 3, overflow: "hidden", bgcolor: "black" }}>
+                <video ref={localVideoRef} autoPlay muted playsInline style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              </Box>
 
-            <div className={styles.chatContainer}>
-              <h1 style={{marginTop: 20,color:"black"}}>Chat</h1>
-              <hr style={{marginBottom:"20px"}}></hr>
-              <div className={styles.chattingDisplay}>
+              <TextField
+                label="Enter Display Name"
+                variant="outlined"
+                fullWidth
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && username.trim() && connect()}
+                placeholder="e.g. John Doe"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PersonIcon />
+                    </InputAdornment>
+                  ),
+                }}
+              />
 
+              <Button
+                variant="contained"
+                size="large"
+                onClick={connect}
+                disabled={!username.trim()}
+                startIcon={<LoginRoundedIcon />}
+                fullWidth
+                sx={{ height: 48 }}
+              >
+                Connect
+              </Button>
+            </Stack>
+          </Paper>
+        </Container>
+      ) : (
+        // --- VIDEO ROOM UI ---
+        <Box sx={{ height: "100vh", display: "flex", flexDirection: "column", bgcolor: "#202124", overflow: "hidden" }}>
+          
+          {/* Main Video Area */}
+          <Box sx={{ flex: 1, p: 2, display: "flex", position: "relative", overflow: "hidden" }}>
+            <Grid container spacing={2} justifyContent="center" alignItems="center" sx={{ height: "100%", width: "100%" }}>
+              
+              {/* Local Video */}
+              <Grid item xs={12} md={videos.length > 0 ? 4 : 8} sx={{ height: videos.length === 0 ? "80%" : "auto" }}>
+                <Paper elevation={4} sx={{ position: "relative", borderRadius: 3, overflow: "hidden", bgcolor: "black", aspectRatio: "16/9", width: "100%", height: "100%" }}>
+                  <video ref={localVideoRef} autoPlay muted style={{ width: "100%", height: "100%", objectFit: "cover" }}></video>
+                  <Box sx={{ position: "absolute", bottom: 10, left: 10, bgcolor: "rgba(0,0,0,0.6)", px: 1, borderRadius: 1 }}>
+                    <Typography variant="caption" color="white">You</Typography>
+                  </Box>
+                </Paper>
+              </Grid>
 
-                {messages.map((item,index)=>{
-                  return(
-                    <div style={{marginBottom:"20px",color:"black"}} key={index}>
-                      <p style={{fontWeight:"bold"}}>{item.sender}</p>
-                      <p>{item.data}</p>
-                    </div>
+              {/* Remote Videos */}
+              {videos.map((video) => (
+                <Grid item key={video.socketId} xs={12} md={4}>
+                  <Paper elevation={4} sx={{ position: "relative", borderRadius: 3, overflow: "hidden", bgcolor: "black", aspectRatio: "16/9", width: "100%" }}>
+                    <video
+                      data-socket={video.socketId}
+                      ref={ref => {
+                        if (ref && video.stream) {
+                          ref.srcObject = video.stream;
+                        }
+                      }}
+                      autoPlay
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    />
+                  </Paper>
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
+
+          {/* Floating Control Bar */}
+          <AppBar position="fixed" color="transparent" sx={{ top: "auto", bottom: 0, boxShadow: "none", alignItems: "center", pb: 3, pointerEvents: "none" }}>
+            <Toolbar sx={{ 
+              bgcolor: "rgba(60, 64, 67, 0.9)", 
+              borderRadius: 8, 
+              pointerEvents: "auto", 
+              gap: 1, 
+              boxShadow: "0px 4px 24px rgba(0,0,0,0.4)" 
+            }}>
+              
+              <Tooltip title="Toggle Video">
+                <IconButton onClick={handleVideo} sx={{ bgcolor: video ? "transparent" : "#ea4335", color: "white", "&:hover": { bgcolor: video ? "rgba(255,255,255,0.1)" : "#d93025" } }}>
+                  {video ? <VideocamIcon /> : <VideocamOffIcon />}
+                </IconButton>
+              </Tooltip>
+
+              <Tooltip title="Toggle Audio">
+                <IconButton onClick={handleAudio} sx={{ bgcolor: audio ? "transparent" : "#ea4335", color: "white", "&:hover": { bgcolor: audio ? "rgba(255,255,255,0.1)" : "#d93025" } }}>
+                  {audio ? <MicIcon /> : <MicOffIcon />}
+                </IconButton>
+              </Tooltip>
+
+              {screenAvailable && (
+                <Tooltip title="Share Screen">
+                  <IconButton onClick={handleScreen} sx={{ color: screen ? "#8ab4f8" : "white" }}>
+                    {screen ? <StopScreenShareIcon /> : <ScreenShareIcon />}
+                  </IconButton>
+                </Tooltip>
+              )}
+
+              <Tooltip title="End Call">
+                <Button variant="contained" color="error" onClick={handleEndCall} sx={{ borderRadius: 8, px: 3, mx: 1 }}>
+                  <CallEndIcon />
+                </Button>
+              </Tooltip>
+
+              <Tooltip title="Chat">
+                <IconButton onClick={handleChat} sx={{ color: showModal ? "#8ab4f8" : "white" }}>
+                  <Badge badgeContent={newMessages} color="secondary">
+                    <ChatIcon />
+                  </Badge>
+                </IconButton>
+              </Tooltip>
+
+            </Toolbar>
+          </AppBar>
+
+          {/* Chat Drawer (Replaced Modal) */}
+          <Drawer
+            anchor="right"
+            open={showModal}
+            onClose={handleChat} // Clicking outside closes it
+            variant="persistent" // Keeps it open without blocking interaction
+            sx={{
+              "& .MuiDrawer-paper": {
+                width: 320,
+                bgcolor: "#202124",
+                borderLeft: "1px solid rgba(255,255,255,0.1)",
+                pb: 10 // Make space for the bottom bar if needed
+              },
+            }}
+          >
+            <Box sx={{ p: 2, display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
+              <Typography variant="h6">In-call Messages</Typography>
+              <IconButton onClick={handleChat}><CloseIcon /></IconButton>
+            </Box>
+
+            <Box sx={{ flex: 1, p: 2, overflowY: "auto", display: "flex", flexDirection: "column", gap: 2 }}>
+              {messages.length === 0 && <Typography variant="body2" color="text.secondary" align="center">No messages yet</Typography>}
+              {messages.map((item, index) => {
+                 const isMe = item.sender === username;
+                 return (
+                  <Box key={index} sx={{ alignSelf: isMe ? "flex-end" : "flex-start", maxWidth: "85%" }}>
+                    <Typography variant="caption" sx={{ color: "text.secondary", ml: 1 }}>{item.sender}</Typography>
+                    <Paper sx={{ 
+                      p: 1.5, 
+                      bgcolor: isMe ? "#8ab4f8" : "#3c4043", 
+                      color: isMe ? "#202124" : "white",
+                      borderRadius: 2,
+                      borderTopRightRadius: isMe ? 0 : 2,
+                      borderTopLeftRadius: !isMe ? 0 : 2
+                    }}>
+                      <Typography variant="body2">{item.data}</Typography>
+                    </Paper>
+                  </Box>
+                 )
+              })}
+            </Box>
+
+            <Box sx={{ p: 2, borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+              <TextField
+                fullWidth
+                size="small"
+                variant="outlined"
+                placeholder="Send a message..."
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={sendMessage} edge="end" color="primary">
+                        <SendIcon />
+                      </IconButton>
+                    </InputAdornment>
                   )
-                })}
-              </div>
-              <div className={styles.chattingArea}>
-                  <TextField value={message} onChange={(e) => setMessage(e.target.value)} id="outlined-basic" label="Enter Your chat" variant="outlined" />
-                  <Button variant='contained' onClick={sendMessage}>Send</Button>
-              </div>
-            </div>
+                }}
+              />
+            </Box>
+          </Drawer>
 
-
-          </div>:<></>}
-
-
-          <div className={styles.buttonContainers}>
-            <IconButton onClick={handleVideo} style={{ color: "white" }}>
-              {(video === true) ? <VideocamIcon /> : <VideocamOffIcon />}
-            </IconButton>
-            <IconButton onClick={handleEndCall} style={{ color: "red" }}>
-              <CallEndIcon />
-            </IconButton>
-            <IconButton onClick={handleAudio} style={{ color: "white" }}>
-              {(audio === true) ? <MicIcon /> : <MicOffIcon />}
-            </IconButton>
-            {screenAvailable === true ?
-              <IconButton onClick={handleScreen} style={{ color: "white" }}>
-                {screen === true ? <ScreenShareIcon /> : <StopScreenShareIcon />}
-              </IconButton> : <></>}
-
-            <Badge badgeContent={newMessages} max={999} color="secondary">
-              <IconButton onClick={handleChat} style={{ color: "white" }}>
-                <MailIcon />
-              </IconButton>
-            </Badge>
-          </div>
-
-          <video className={styles.meetUserVideo} ref={localVideoRef} autoPlay muted></video>
-
-          <div className={styles.conferenceView}>
-            {videos.map((video) => (
-              <div key={video.socketId} >
-                <video className={styles.videoWrapper}
-                  data-socket={video.socketId}
-                  ref={ref => {
-                    if (ref && video.stream) {
-                      ref.srcObject = video.stream;
-                    }
-                  }}
-                  autoPlay
-                >
-                </video>
-              </div>
-            ))}
-          </div>
-        </div>
-      }
-    </div>
+        </Box>
+      )}
+    </ThemeProvider>
   );
-} 
+}

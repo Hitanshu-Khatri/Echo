@@ -22,7 +22,7 @@ export default function Landing() {
               <p>Register</p>
             </Link>
 
-            <Link to="/auth" className="navLink primary">
+            <Link to="/login" className="navLink primary">
               <p>Login</p>
             </Link>
           </div>

@@ -19,7 +19,7 @@ function App() {
           <Routes>
             <Route path='/home' element={<HomeComponent />} />
             <Route path='/' element={<LandingPage />} />
-            <Route path='/auth' element={<Authentication />} />
+            <Route path='/login' element={<Authentication />} />
             <Route path='/sign-up' element={<SignUp />} />
             <Route path='/meet/:url' element={<VideoMeetComponent />} />
             <Route path='/history' element={<History />} />

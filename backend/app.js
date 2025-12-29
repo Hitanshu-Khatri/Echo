@@ -5,8 +5,8 @@ import mongoose from "mongoose";
 import cors from "cors";
 import {connectToSocket} from "./controllers/socketManager.js";
 import userRoutes from "./routes/users.route.js";
-import dotenv from 'dotenv';
-dotenv.config();
+// import dotenv from 'dotenv';
+// dotenv.config();
 
 
 const app = express();

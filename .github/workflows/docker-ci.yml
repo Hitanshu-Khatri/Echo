@@ -25,5 +25,8 @@ jobs:
 
       - name: Build & Push Nginx
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/echo-nginx ./nginx
-          docker push ${{ secrets.DOCKER_USERNAME }}/echo-nginx
+          docker build \
+            -t ${{ secrets.DOCKER_USERNAME }}/echo-nginx:latest \
+            -f nginx/Dockerfile \
+            .
+          docker push ${{ secrets.DOCKER_USERNAME }}/echo-nginx:latest

@@ -20,12 +20,20 @@ app.use("/api/v1/users",userRoutes);
 
 
 const start = async ()=>{
-    app.set("mongo_user")
-    const connectionDb = await mongoose.connect(process.env.MONGODB_URI);
-    console.log("Connected to MongoDb");
-    server.listen(app.get("port"),"0.0.0.0",()=>{
-        console.log(`Server is running on port ${app.get("port")}`);
-    });
+    if (!process.env.MONGODB_URI) {
+        console.error("MONGODB_URI is not set. Configure it in the Render environment.");
+        process.exit(1);
+    }
+    try {
+        const connectionDb = await mongoose.connect(process.env.MONGODB_URI);
+        console.log(`Connected to MongoDB: ${connectionDb.connection.host}`);
+        server.listen(app.get("port"),"0.0.0.0",()=>{
+            console.log(`Server is running on port ${app.get("port")}`);
+        });
+    } catch (err) {
+        console.error("MongoDB connection failed:", err.message);
+        process.exit(1);
+    }
 }
  
 start();
